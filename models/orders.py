@@ -14,7 +14,7 @@ class Order(Base):
     count = Column(Integer, default=1) # Значение по умолчанию
 
 
-    product = relationship("Product", back_populates="order")
+    product = relationship("Product", back_populates="order", lazy="joined")
 
 
 

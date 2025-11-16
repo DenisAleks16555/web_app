@@ -2,7 +2,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 import uvicorn
 from fastapi.templating import Jinja2Templates
-
+from database.db import SessionLocal
+from models.orders import Order
+from models.products import Product
 
 app = FastAPI(title="Моё первое веб приложение")
 
@@ -37,6 +39,25 @@ def contacts(request: Request):
         "email": "top@secret.com"
     }
     return templates.TemplateResponse("contacts.html", context=context)
+
+@app.get("/orders",response_class=HTMLResponse)
+def orders(request: Request):
+    session = SessionLocal()
+    data = session.query(Order).all()
+    session.close()
+
+    context = {
+        "request": request,
+        "title": "Заказы",
+        "orders": data
+        
+    }
+    return templates.TemplateResponse("orders.html", context=context)
+
+
+
+
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=8000, reload=True) # Сервер автоматически перезагружается когда мы вносим изменения в коде
