@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse # Ответ перенаправлением на другую сьраницу
 import uvicorn
 from fastapi.templating import Jinja2Templates
 from database.db import SessionLocal
@@ -54,8 +54,40 @@ def orders(request: Request):
     }
     return templates.TemplateResponse("orders.html", context=context)
 
+@app.get("/orders/create",response_class=HTMLResponse)
+def order_create(request: Request):
+    session = SessionLocal()  
+    data = session.query(Product).all()
+    session.close()
+
+    context = {
+        "request": request,
+        "title": "Создать заказ",
+        "products": data   
+    }
+    return templates.TemplateResponse("order_create.html", context=context)
 
 
+@app.post("/orders/create",response_class=RedirectResponse)
+def order_create_data(
+    customer_name: str = Form(...),
+    phone_number: str = Form(...),
+    product_id: int = Form(...),
+    count: int = Form(...),
+):
+    session = SessionLocal()  
+    new_order = Order(
+        customer_name=customer_name,
+        phone_number=phone_number,
+        product_id=product_id,
+        count=count
+    )
+    session.add(new_order)
+    session.commit()
+    session.close()
+
+   
+    return RedirectResponse("/orders/create", status_code=303)
 
 
 
